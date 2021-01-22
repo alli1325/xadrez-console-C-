@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using tabuleiro;
 
@@ -12,6 +13,7 @@ namespace xadrez
         private HashSet<Peca> pecas;
         private HashSet<Peca> capturadas;
         public bool xeque { get; private set; }
+        public bool promocao { get; private set; }
         public Peca vulneravelEnPassant { get; private set; }
 
         public PartidaDeXadrez() {
@@ -20,6 +22,7 @@ namespace xadrez
             jogadorAtual = Cor.Branca;
             terminada = false;
             xeque = false;
+            promocao = false;
             vulneravelEnPassant = null;
             pecas = new HashSet<Peca>();
             capturadas = new HashSet<Peca>();
@@ -122,6 +125,20 @@ namespace xadrez
                 throw new TabuleiroException("Você não pode se colocar em xeque!");
             }
 
+            Peca p = tab.peca(destino);
+
+            //#jogadaespecial promocao
+            if (p is Peao) {
+                if ((p.cor == Cor.Branca && destino.linha == 0) || (p.cor == Cor.Preta && destino.linha == 7)){
+                    p = tab.retirarPeca(destino);
+                    pecas.Remove(p);
+                    Peca dama = new Dama(tab, p.cor);
+                    tab.colocarPeca(dama, destino);
+                    pecas.Add(dama);
+                }
+            }
+
+
             if (estaEmXeque(adversaria(jogadorAtual))) {
                 xeque = true;
             }
@@ -137,7 +154,6 @@ namespace xadrez
                 mudaJogador();
             }          
 
-            Peca p = tab.peca(destino);
 
             //#jogadaespecial en passant
             if(p is Peao && (destino.linha == origem.linha - 2 || destino.linha == origem.linha +2)) {
@@ -276,6 +292,7 @@ namespace xadrez
             colocarNovaPeca('g', 2, new Peao(tab, Cor.Branca, this));
             colocarNovaPeca('h', 2, new Peao(tab, Cor.Branca, this));
             
+            
             colocarNovaPeca('a', 8, new Torre(tab, Cor.Preta));
             colocarNovaPeca('b', 8, new Cavalo(tab, Cor.Preta));
             colocarNovaPeca('c', 8, new Bispo(tab, Cor.Preta));
@@ -292,6 +309,7 @@ namespace xadrez
             colocarNovaPeca('f', 7, new Peao(tab, Cor.Preta, this));
             colocarNovaPeca('g', 7, new Peao(tab, Cor.Preta, this));
             colocarNovaPeca('h', 7, new Peao(tab, Cor.Preta, this));
+            
 
         }
     }
